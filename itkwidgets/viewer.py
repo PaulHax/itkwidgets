@@ -31,7 +31,7 @@ class ViewerRPC:
         self._init_viewer_kwargs = dict(ui_collapsed=ui_collapsed, rotate=rotate, ui=ui)
         self._init_viewer_kwargs.update(**add_data_kwargs)
         self.init_data = {}
-        self.img = display(HTML(f'<div />'), display_id=str(uuid.uuid4()))
+        self.img = display(HTML(f"<div />"), display_id=str(uuid.uuid4()))
         self.wid = None
         self.viewer_event = threading.Event()
         self.data_event = threading.Event()
@@ -55,7 +55,7 @@ class ViewerRPC:
         if ui == "pydata-sphinx":
             config = {
                 "uiMachineOptions": {
-                    "href": "https://cdn.jsdelivr.net/npm/itk-viewer-bootstrap-ui@0.11.0/dist/bootstrapUIMachineOptions.js.es.js",
+                    "href": "http://localhost:4173/bootstrapUIMachineOptions.js.es.js",
                     "export": "default",
                 }
             }
@@ -74,7 +74,7 @@ class ViewerRPC:
         inputs = self._get_input_data()
 
         self.init_data.clear()
-        result= None
+        result = None
         for (input_type, data) in inputs:
             render_type = _detect_render_type(data, input_type)
             key = init_key_aliases()[input_type]
@@ -96,9 +96,7 @@ class ViewerRPC:
             config=config,
         )
         _viewer_count += 1
-        itk_viewer.registerEventListener(
-            'renderedImageAssigned', self.set_event
-        )
+        itk_viewer.registerEventListener("renderedImageAssigned", self.set_event)
         # Once the viewer has been created any queued requests can be run
         asyncio.get_running_loop().call_soon_threadsafe(self.viewer_event.set)
 
@@ -113,9 +111,7 @@ class ViewerRPC:
         await self.create_screenshot()
         # Set up an event listener so that the embedded
         # screenshot is updated when the user requests
-        itk_viewer.registerEventListener(
-            'screenshotTaken', self.update_screenshot
-        )
+        itk_viewer.registerEventListener("screenshotTaken", self.update_screenshot)
 
     def set_default_ui_values(self, itk_viewer):
         settings = init_params_dict(itk_viewer)
@@ -129,7 +125,7 @@ class ViewerRPC:
 
     def update_screenshot(self, base64_image):
         html = HTML(
-            f'''
+            f"""
                 <img id="screenshot_{self.wid}" src={base64_image}>
                 <script type="text/javascript">
                     var image = document.getElementById("screenshot_{self.wid}");
@@ -138,7 +134,8 @@ class ViewerRPC:
                     // Hide the static image if the Viewer is visible
                     image.style.display = viewer ? "none" : "block";
                 </script>
-            ''')
+            """
+        )
         self.img.display(html)
 
     def set_event(self, event_data):
@@ -188,118 +185,118 @@ class Viewer:
         loop.run_until_complete(task)
 
     def queue_request(self, method, *args):
-        if hasattr(self.viewer_rpc, 'itk_viewer'):
+        if hasattr(self.viewer_rpc, "itk_viewer"):
             fn = getattr(self.viewer_rpc.itk_viewer, method)
             fn(*args)
         elif method in deferred_methods():
-            self.deferred_queue.put({'method': method, 'arg': args})
+            self.deferred_queue.put({"method": method, "arg": args})
         else:
-            self.queue.put({'method': method, 'arg': args})
+            self.queue.put({"method": method, "arg": args})
 
     def set_annotations_enabled(self, enabled: bool):
-        self.queue_request('setAnnotationsEnabled', enabled)
+        self.queue_request("setAnnotationsEnabled", enabled)
 
     def set_axes_enabled(self, enabled: bool):
-        self.queue_request('setAxesEnabled', enabled)
+        self.queue_request("setAxesEnabled", enabled)
 
     def set_background_color(self, bgColor: List[float]):
-        self.queue_request('setBackgroundColor', bgColor)
+        self.queue_request("setBackgroundColor", bgColor)
 
     def set_image(self, image: Image):
-        render_type = _detect_render_type(image, 'image')
+        render_type = _detect_render_type(image, "image")
         if render_type is RenderType.IMAGE:
             image = _get_viewer_image(image)
-            self.queue_request('setImage', image)
+            self.queue_request("setImage", image)
         elif render_type is RenderType.POINT_SET:
             image = _get_viewer_point_sets(image)
-            self.queue_request('setPointSets', image)
+            self.queue_request("setPointSets", image)
 
     def set_image_blend_mode(self, mode: str):
-        self.queue_request('setImageBlendMode', mode)
+        self.queue_request("setImageBlendMode", mode)
 
     def set_image_color_map(self, colorMap: str):
-        self.queue_request('setImageColorMap', colorMap)
+        self.queue_request("setImageColorMap", colorMap)
 
     def set_image_color_range(self, range: List[float]):
-        self.queue_request('setImageColorRange', range)
+        self.queue_request("setImageColorRange", range)
 
     def set_image_color_range_bounds(self, range: List[float]):
-        self.queue_request('setImageColorRangeBounds', range)
+        self.queue_request("setImageColorRangeBounds", range)
 
     def set_image_component_visibility(self, visibility: bool):
-        self.queue_request('setImageComponentVisibility', visibility)
+        self.queue_request("setImageComponentVisibility", visibility)
 
     def set_image_gradient_opacity(self, opacity: float):
-        self.queue_request('setImageGradientOpacity', opacity)
+        self.queue_request("setImageGradientOpacity", opacity)
 
     def set_image_gradient_opacity_scale(self, min: float):
-        self.queue_request('setImageGradientOpacityScale', min)
+        self.queue_request("setImageGradientOpacityScale", min)
 
     def set_image_interpolation_enabled(self, enabled: bool):
-        self.queue_request('setImageInterpolationEnabled', enabled)
+        self.queue_request("setImageInterpolationEnabled", enabled)
 
     def set_image_piecewise_function_gaussians(self, gaussians: Gaussians):
-        self.queue_request('setImagePiecewiseFunctionGaussians', gaussians)
+        self.queue_request("setImagePiecewiseFunctionGaussians", gaussians)
 
     def set_image_shadow_enabled(self, enabled: bool):
-        self.queue_request('setImageShadowEnabled', enabled)
+        self.queue_request("setImageShadowEnabled", enabled)
 
     def set_image_volume_sample_distance(self, distance: float):
-        self.queue_request('setImageVolumeSampleDistance', distance)
+        self.queue_request("setImageVolumeSampleDistance", distance)
 
     def set_label_image(self, label_image: Image):
-        render_type = _detect_render_type(label_image, 'image')
+        render_type = _detect_render_type(label_image, "image")
         if render_type is RenderType.IMAGE:
             label_image = _get_viewer_image(label_image)
-            self.queue_request('setImage', label_image)
+            self.queue_request("setImage", label_image)
         elif render_type is RenderType.POINT_SET:
             label_image = _get_viewer_point_sets(label_image)
-            self.queue_request('setPointSets', label_image)
+            self.queue_request("setPointSets", label_image)
 
     def set_label_image_blend(self, blend: float):
-        self.queue_request('setLabelImageBlend', blend)
+        self.queue_request("setLabelImageBlend", blend)
 
     def set_label_image_label_names(self, names: List[str]):
-        self.queue_request('setLabelImageLabelNames', names)
+        self.queue_request("setLabelImageLabelNames", names)
 
     def set_label_image_lookup_table(self, lookupTable: str):
-        self.queue_request('setLabelImageLookupTable', lookupTable)
+        self.queue_request("setLabelImageLookupTable", lookupTable)
 
     def set_label_image_weights(self, weights: float):
-        self.queue_request('setLabelImageWeights', weights)
+        self.queue_request("setLabelImageWeights", weights)
 
     def select_layer(self, name: str):
-        self.queue_request('selectLayer', name)
+        self.queue_request("selectLayer", name)
 
     def set_layer_visibility(self, visible: bool):
-        self.queue_request('setLayerVisibility', visible)
+        self.queue_request("setLayerVisibility", visible)
 
     def set_point_sets(self, pointSets: Point_Sets):
-        self.queue_request('setPointSets', pointSets)
+        self.queue_request("setPointSets", pointSets)
 
     def set_rendering_view_container_style(self, containerStyle: Style):
-        self.queue_request('setRenderingViewContainerStyle', containerStyle)
+        self.queue_request("setRenderingViewContainerStyle", containerStyle)
 
     def set_rotate(self, enabled: bool):
-        self.queue_request('setRotateEnabled', enabled)
+        self.queue_request("setRotateEnabled", enabled)
 
     def set_ui_collapsed(self, collapsed: bool):
-        self.queue_request('setUICollapsed', collapsed)
+        self.queue_request("setUICollapsed", collapsed)
 
     def set_units(self, units: str):
-        self.queue_request('setUnits', units)
+        self.queue_request("setUnits", units)
 
     def set_view_mode(self, mode: str):
-        self.queue_request('setViewMode', mode)
+        self.queue_request("setViewMode", mode)
 
     def set_x_slice(self, position: float):
-        self.queue_request('setXSlice', position)
+        self.queue_request("setXSlice", position)
 
     def set_y_slice(self, position: float):
-        self.queue_request('setYSlice', position)
+        self.queue_request("setYSlice", position)
 
     def set_z_slice(self, position: float):
-        self.queue_request('setZSlice', position)
+        self.queue_request("setZSlice", position)
 
 
 def view(data=None, **kwargs):
