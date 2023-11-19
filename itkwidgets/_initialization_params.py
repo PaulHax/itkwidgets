@@ -40,7 +40,7 @@ def init_params_dict(itk_viewer):
     }
 
 
-def build_config(ui=None):
+def build_config(ui):
     if ui == "pydata-sphinx":
         config = {
             "uiMachineOptions": {
@@ -55,11 +55,11 @@ def build_config(ui=None):
                 "export": "default",
             }
         }
-    elif ui != "reference":
-        config = ui
     else:
         config = {}
+
     config['maxConcurrency'] = os.cpu_count() * 2
+    config['permissions'] = ["full-screen"]
 
     return config
 
